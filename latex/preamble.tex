@@ -1,0 +1,121 @@
+% imports
+\usepackage[english]{babel}
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+\usepackage{amsmath, amssymb, amsthm, amsfonts, mathtools}
+\usepackage{mathrsfs}
+\usepackage{comment}
+\usepackage{emptypage} % hide page number when page is empty
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{ifthen,ifthenx}
+\usepackage[skip=15pt,indent=0pt]{parskip} % don't indent paragraphs, leave some space between them
+\usepackage{pgfplots}
+\usepackage{tikz}
+    \usetikzlibrary{calc, intersections, pgfplots.fillbetween, angles, quotes}
+\usepackage{subfiles}
+% \usepackage{yamlvars}
+
+% config
+\pgfplotsset{compat=1.18}
+\pgfdeclarelayer{ft} 
+\pgfdeclarelayer{bg} 
+\pgfsetlayers{bg,main,ft}
+
+% put x \to \infty below \lim
+\let\svlim\lim\def\lim{\svlim\limits}
+
+% structure labels
+\newtheorem*{lemma}{Lemma}
+\newtheorem*{proposition}{Proposition}
+\newtheorem*{theorem}{Theorem}
+\newtheorem*{definition}{Definition}
+\newtheorem*{eg}{Example}
+\newtheorem*{notation}{Notation}
+\newtheorem*{previouslyseen}{As previously seen}
+\newtheorem*{remark}{Remark}
+\newtheorem*{note}{Note}
+\newtheorem*{problem}{Problem}
+\newtheorem*{observe}{Observe}
+\newtheorem*{property}{Property}
+\newtheorem*{intuition}{Intuition}
+
+
+% fix spacing
+% http://tex.stackexchange.com/questions/22119/how-can-i-change-the-spacing-before-theorems-with-amsthm
+\makeatletter
+\def\thm@space@setup{%
+  \thm@preskip=\parskip \thm@postskip=0pt
+}
+
+% lecture sub files
+\def\@lecture{}%
+\newcommand{\lecture}[3]{
+    \ifthenelse{\isempty{#3}}{%
+        \def\@lecture{Lecture #1}%
+    }{%
+        \def\@lecture{Lecture #1: #3}%
+    }%
+    \subsection*{\@lecture}
+    \marginpar{\small\textsf{\mbox{#2}}}
+}
+
+\newcommand{\exercise}[1]{%
+    \def\@exercise{#1}%
+    \subsection*{Exercise #1}
+}
+
+\newcommand{\subexercise}[1]{%
+    \subsubsection*{Exercise \@exercise.#1}
+}
+
+% page frame
+% \pagestyle{fancy}
+% \fancyhf{}
+% \lhead{\today}
+% \rhead{}
+% \chead{}
+
+\rfoot{\thepage}
+
+% headers 
+\pagestyle{fancy}
+
+% L, C, R: left, center, right
+% E, O: even, odd
+
+% \fancyhead[LE,RO]{Alexandre Lipson}
+
+% \fancyhead[RO,LE]{\@lecture} % Right odd,  Left even
+% \fancyhead[RE,LO]{}          % Right even, Left odd
+%
+% \fancyfoot[RO,LE]{\thepage}  % Right odd,  Left even
+% \fancyfoot[RE,LO]{}          % Right even, Left odd
+% \fancyfoot[C]{\leftmark}     % Center
+
+\makeatother
+
+
+% snippet shortcuts
+\newcommand\N{\ensuremath{\mathbb{N}}}
+\newcommand\R{\ensuremath{\mathbb{R}}}
+\newcommand\Z{\ensuremath{\mathbb{Z}}}
+\renewcommand\O{\ensuremath{\emptyset}}
+\newcommand\Q{\ensuremath{\mathbb{Q}}}
+\newcommand\C{\ensuremath{\mathbb{C}}}
+
+
+% figure support 
+\usepackage{xifthen}
+\usepackage{pdfpages}
+\usepackage{transparent}
+\newcommand{\incfig}[1]{%
+    \def\svgwidth{\columnwidth}
+    \import{./figures/}{#1.pdf_tex}
+}
+
+% http://tex.stackexchange.com/questions/76273/multiple-pdfs-with-page-group-included-in-a-single-page-warning
+% \pdfsuppresswarningpagegroup=1
+
+\author{Alexandre Lipson}
