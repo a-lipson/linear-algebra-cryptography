@@ -6,4 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+fp-core = "0.1.9"
 nalgebra = "0.32.5"
+prime_factorization = "1.0.4"

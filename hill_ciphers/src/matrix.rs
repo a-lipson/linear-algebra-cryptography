@@ -11,11 +11,6 @@ pub fn A() -> DMatrix<i32> {
     DMatrix::from_row_slice(2, 2, &[23, 7, 18, 5])
 }
 
-// Modulo operation on matrices
-pub fn matrix_modulo(matrix: &DMatrix<i32>, modulus: i32) -> DMatrix<i32> {
-    matrix.map(|x| x % modulus)
-}
-
 // Encryption function
 pub fn encrypt_matrix(m: &DMatrix<i32>) -> DMatrix<i32> {
     A() * m
