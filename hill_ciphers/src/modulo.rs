@@ -31,7 +31,7 @@ pub fn matrix_modulo(matrix: &DMatrix<i32>, modulus: i32) -> DMatrix<i32> {
 fn euler_totient(n: u64) -> u64 {
     let prime_factorization = Factorization::run(n);
     if prime_factorization.is_prime {
-        return n;
+        return n - 1; // this negative one shouldn't be handled here based on the math.
     }
 
     let mut result = n as f64;
@@ -99,3 +99,15 @@ pub fn modulo_matrix_inverse(a: DMatrix<i32>, modulus: i32) -> DMatrix<i32> {
 //         None
 //     }
 // }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_modular_inverse() {
+        assert_eq!(modular_inverse(7, 26), 15);
+        assert_eq!(modular_inverse(3, 25), 17);
+        assert_eq!(modular_inverse(24, 29), 23);
+    }
+}
