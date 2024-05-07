@@ -6,7 +6,7 @@ mod text;
 
 fn main() {
     let ciphertext = "SONAFQCHMWPTVEVY";
-    let e = modulo::matrix_modulo(&text::matrix_from_text(ciphertext), 26);
+    let e = modulo::matrix_modulo(&text::matrix_from_text(&ciphertext), 26);
     println!(
         "Encrypted and modded matrix:\n{}",
         modulo::matrix_modulo(&matrix::encrypt_matrix(&e), 26)
@@ -28,7 +28,7 @@ fn main() {
     // Testing inverse
     let message = "THISISATEST";
     let e = modulo::matrix_modulo(
-        &matrix::encrypt_matrix(&text::matrix_from_text(message)),
+        &matrix::encrypt_matrix(&text::matrix_from_text(&message)),
         26,
     );
     println!(
@@ -44,6 +44,6 @@ fn main() {
 
     println!(
         "Inverse Matrix test:\n{}",
-        modulo::modulo_matrix_inverse(DMatrix::from_row_slice(2, 2, &[43, 27, 120, 1123]), 27)
+        modulo::matrix_modular_inverse(&matrix::CipherMatrix2::new(43, 27, 120, 1123), 27)
     );
 }

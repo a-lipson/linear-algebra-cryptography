@@ -6,6 +6,10 @@ pub struct CipherMatrix2 {
     pub matrix: DMatrix<i32>,
 }
 
+pub struct TextMatrix2 {
+    pub matrix: DMatrix<i32>,
+}
+
 impl CipherMatrix2 {
     pub fn new(a: i32, b: i32, c: i32, d: i32) -> Self {
         CipherMatrix2 {

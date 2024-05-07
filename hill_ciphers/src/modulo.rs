@@ -1,36 +1,12 @@
 extern crate nalgebra as na;
 use crate::matrix::CipherMatrix2;
-use na::{DMatrix, Scalar};
-use num::Zero;
+use na::DMatrix;
 use prime_factorization::Factorization;
-use std::cmp::PartialOrd;
 use std::collections::HashSet;
-use std::ops::{AddAssign, Rem};
 
 trait RemoveDuplicates<T> {
     fn remove_duplicates(&self) -> Vec<T>;
 }
-
-// pub trait ModularMatrix<T: AddAssign + Copy + PartialOrd + Rem<Output = T> + Scalar + Zero> {
-//     // fn modulo(&mut self, modulus: T)
-//     fn modulo(&self, modulus: T) -> DMatrix<T>;
-// }
-//
-// impl<T> ModularMatrix<T> for DMatrix<T>
-// where
-//     T: AddAssign + Copy + PartialOrd + Rem<Output = T> + Scalar + Zero,
-// {
-//     fn modulo(&self, modulus: T) -> DMatrix<T> {
-//         self.map(|elem| {
-//             let mut a = elem % modulus;
-//             // ensure the result is non-negative
-//             if a < T::zero() {
-//                 a += modulus;
-//             }
-//             a
-//         })
-//     }
-// }
 
 // TODO: is there a better way to do this?
 impl<T: Eq + std::hash::Hash + Clone> RemoveDuplicates<T> for Vec<T> {
@@ -42,18 +18,6 @@ impl<T: Eq + std::hash::Hash + Clone> RemoveDuplicates<T> for Vec<T> {
             .collect() // collect into Vec<T>
     }
 }
-
-// modulo operation on matrices
-// pub fn matrix_modulo(matrix: &DMatrix<i32>, modulus: i32) -> DMatrix<i32> {
-//     matrix.map(|elem| {
-//         let mut a = elem % modulus;
-//         // ensure the result is non-negative
-//         if a < 0 {
-//             a += modulus;
-//         }
-//         a
-//     })
-// }
 
 // https://en.wikipedia.org/wiki/Euler%27s_totient_function
 fn euler_totient(n: u64) -> u64 {
@@ -95,12 +59,12 @@ fn modular_exponentiation(base: i32, exponent: i32, modulus: i32) -> i32 {
 }
 
 // https://en.wikipedia.org/wiki/Euler%27s_theorem
-pub fn modular_inverse(a: i32, modulus: i32) -> i32 {
-    modular_exponentiation(a, euler_totient(modulus as u64) as i32 - 1, modulus)
+pub fn modular_inverse(n: i32, modulus: i32) -> i32 {
+    modular_exponentiation(n, euler_totient(modulus as u64) as i32 - 1, modulus)
 }
 
-pub fn modulo_matrix_inverse(matrix: CipherMatrix2, modulus: i32) -> CipherMatrix2 {
-    let a = matrix.matrix;
+pub fn matrix_modular_inverse(matrix: &CipherMatrix2, modulus: i32) -> CipherMatrix2 {
+    let a = &matrix.matrix;
 
     let det = a[(0, 0)] * a[(1, 1)] - a[(0, 1)] * a[(1, 0)];
 
@@ -109,8 +73,17 @@ pub fn modulo_matrix_inverse(matrix: CipherMatrix2, modulus: i32) -> CipherMatri
     let adj = CipherMatrix2::new(a[(1, 1)], -a[(0, 1)], -a[(1, 0)], a[(0, 0)]);
 
     adj.scale(det_inv).modulo(modulus)
-    // (adj.matrix.map(|elem| det_inv * elem)).modulo(modulus);
-    // matrix_modulo(&adj.map(|elem| det_inv * elem), modulus)
+}
+
+pub fn matrix_modulo(matrix: &DMatrix<i32>, modulus: i32) -> DMatrix<i32> {
+    matrix.map(|elem| {
+        let mut a = elem % modulus;
+        // ensure the result is non-negative
+        if a < 0 {
+            a += modulus;
+        }
+        a
+    })
 }
 
 #[cfg(test)]
