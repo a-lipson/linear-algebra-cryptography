@@ -7,6 +7,7 @@ trait RemoveDuplicates<T> {
     fn remove_duplicates(&self) -> Vec<T>;
 }
 
+// TODO: is there a better way to do this?
 impl<T: Eq + std::hash::Hash + Clone> RemoveDuplicates<T> for Vec<T> {
     fn remove_duplicates(&self) -> Vec<T> {
         self.iter()
@@ -30,11 +31,9 @@ pub fn matrix_modulo(matrix: &DMatrix<i32>, modulus: i32) -> DMatrix<i32> {
 // https://en.wikipedia.org/wiki/Euler%27s_totient_function
 fn euler_totient(n: u64) -> u64 {
     let prime_factorization = Factorization::run(n);
-    if prime_factorization.is_prime {
-        return n - 1; // this negative one shouldn't be handled here based on the math.
-    }
 
     let mut result = n as f64;
+
     for factor in prime_factorization.factors.remove_duplicates() {
         result *= 1.0 - (1.0 / factor as f64);
     }
@@ -43,27 +42,27 @@ fn euler_totient(n: u64) -> u64 {
 }
 
 fn modular_exponentiation(base: i32, exponent: i32, modulus: i32) -> i32 {
-    // Convert to u64 to handle negative values gracefully
+    // convert to u64 to handle negative values
     let mut base = base as u32;
     let mut exponent = exponent as u32;
     let modulus = modulus as u32;
     let mut result = 1u32;
 
-    // Ensure the base is within the modulus to start
+    // ensure the base is within the modulus to start
     base = base % modulus;
 
     while exponent > 0 {
-        // If the exponent is odd, multiply the current base with the result
+        // if the exponent is odd, multiply the current base with the result
         if exponent % 2 == 1 {
             result = (result * base) % modulus;
         }
-        // Square the base
+        // square the base
         base = (base * base) % modulus;
-        // Divide the exponent by 2
+        // divide the exponent by 2
         exponent >>= 1;
     }
 
-    // Convert the result back to i64
+    // convert the result back to i64
     result as i32
 }
 
@@ -79,30 +78,40 @@ pub fn modular_inverse(a: i32, modulus: i32) -> i32 {
 }
 
 pub fn modulo_matrix_inverse(a: DMatrix<i32>, modulus: i32) -> DMatrix<i32> {
-    DMatrix::from_row_slice(2, 2, &[])
-}
+    // ensure the matrix is 2x2
+    assert_eq!(a.nrows(), 2);
+    assert_eq!(a.ncols(), 2);
 
-// fn extended_gcd(a: i64, b: i64) -> (i64, i64, i64) {
-//     if a == 0 {
-//         (b, 0, 1)
-//     } else {
-//         let (gcd, x, y) = extended_gcd(b % a, a);
-//         (gcd, y - (b / a) * x, x)
-//     }
-// }
-//
-// pub fn modular_inverse(x: i32) -> i32 {
-//     let (gcd, x, _) = extended_gcd(a, m);
-//     if gcd == 1 {
-//         Some((x % m + m) % m) // Ensure the result is non-negative
-//     } else {
-//         None
-//     }
-// }
+    // compute the determinant
+    let det = a[(0, 0)] * a[(1, 1)] - a[(0, 1)] * a[(1, 0)];
+
+    // compute the modular inverse of the determinant
+    let det_inv = modular_inverse(det, modulus);
+
+    // calculate the adjugate matrix
+    let adj = DMatrix::from_row_slice(2, 2, &[a[(1, 1)], -a[(0, 1)], -a[(1, 0)], a[(0, 0)]]);
+
+    // multiply by the modular inverse and apply the modulus and ensure positivity
+    adj.map(|elem| {
+        let mut result = (det_inv * elem) % modulus;
+        // Ensure the result is non-negative
+        if result < 0 {
+            // do we need a while here?
+            result += modulus;
+        }
+        result
+    })
+}
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_euler_totient() {
+        assert_eq!(euler_totient(26), 12);
+        assert_eq!(euler_totient(29), 28);
+    }
 
     #[test]
     fn test_modular_inverse() {
@@ -110,4 +119,7 @@ mod tests {
         assert_eq!(modular_inverse(3, 25), 17);
         assert_eq!(modular_inverse(24, 29), 23);
     }
+
+    #[test]
+    fn test_modulo_matrix_inverse() {}
 }

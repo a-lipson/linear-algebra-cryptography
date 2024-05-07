@@ -41,4 +41,9 @@ fn main() {
     );
 
     println!("Inverse Modulo test:\n{}", modulo::modular_inverse(7, 26));
+
+    println!(
+        "Inverse Matrix test:\n{}",
+        modulo::modulo_matrix_inverse(DMatrix::from_row_slice(2, 2, &[43, 27, 120, 1123]), 27)
+    );
 }
