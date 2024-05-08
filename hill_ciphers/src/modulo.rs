@@ -63,29 +63,6 @@ pub fn modular_inverse(n: i32, modulus: i32) -> i32 {
     modular_exponentiation(n, euler_totient(modulus as u64) as i32 - 1, modulus)
 }
 
-pub fn matrix_modular_inverse(matrix: &CipherMatrix2, modulus: i32) -> CipherMatrix2 {
-    let a = &matrix.matrix;
-
-    let det = a[(0, 0)] * a[(1, 1)] - a[(0, 1)] * a[(1, 0)];
-
-    let det_inv = modular_inverse(det, modulus);
-
-    let adj = CipherMatrix2::new(a[(1, 1)], -a[(0, 1)], -a[(1, 0)], a[(0, 0)]);
-
-    adj.scale(det_inv).modulo(modulus)
-}
-
-pub fn matrix_modulo(matrix: &DMatrix<i32>, modulus: i32) -> DMatrix<i32> {
-    matrix.map(|elem| {
-        let mut a = elem % modulus;
-        // ensure the result is non-negative
-        if a < 0 {
-            a += modulus;
-        }
-        a
-    })
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -102,7 +79,4 @@ mod tests {
         assert_eq!(modular_inverse(3, 25), 17);
         assert_eq!(modular_inverse(24, 29), 23);
     }
-
-    #[test]
-    fn test_modulo_matrix_inverse() {}
 }
