@@ -2,7 +2,6 @@ extern crate nalgebra as na;
 use crate::matrix::ModularMatrix;
 mod matrix;
 mod modulo;
-mod text;
 
 fn main() {
     let ciphertext = "SONAFQCHMWPTVEVY";

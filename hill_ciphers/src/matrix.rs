@@ -56,21 +56,6 @@ impl CipherMatrix2 {
         }
     }
 
-    // pub fn modulo(&self, modulus: i32) -> Self {
-    //     let modulated_matrix = self.matrix.map(|elem| {
-    //         let mut a = elem % modulus;
-    //         // ensure the result is non-negative
-    //         if a < 0 {
-    //             a += modulus;
-    //         }
-    //         a
-    //     });
-    //
-    //     CipherMatrix2 {
-    //         matrix: modulated_matrix,
-    //     }
-    // }
-
     // modular inverse
     pub fn inverse(&self, modulus: i32) -> Self {
         let a = &self.matrix;
@@ -90,30 +75,20 @@ impl TextMatrix2 {
         TextMatrix2 { matrix }
     }
 
-    // pub fn modulo(&self, modulus: i32) -> Self {
-    //     let modulated_matrix = self.matrix.map(|elem| {
-    //         let mut a = elem % modulus;
-    //         // ensure the result is non-negative
-    //         if a < 0 {
-    //             a += modulus;
-    //         }
-    //         a
-    //     });
-    //
-    //     TextMatrix2 {
-    //         matrix: modulated_matrix,
-    //     }
-    // }
-
     pub fn encrypt(&self) -> Self {
         TextMatrix2 {
-            matrix: &self.matrix * encrypt_matrix().matrix,
+            matrix: encrypt_matrix().matrix * &self.matrix,
         }
     }
 
     pub fn decrypt(&self) -> Self {
+        println!(
+            "self matrix: \n{}\ndecrypt matrix: \n{}",
+            &self.matrix,
+            decrypt_matrix().matrix
+        );
         TextMatrix2 {
-            matrix: &self.matrix * decrypt_matrix().matrix,
+            matrix: decrypt_matrix().matrix * &self.matrix,
         }
     }
 
