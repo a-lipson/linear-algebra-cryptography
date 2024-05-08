@@ -1,11 +1,19 @@
 extern crate nalgebra as na;
-use na::DMatrix;
+use crate::matrix::ModularMatrix;
 mod matrix;
 mod modulo;
 mod text;
 
 fn main() {
     let ciphertext = "SONAFQCHMWPTVEVY";
+
+    let text_matrix = matrix::TextMatrix2::new(ciphertext);
+
+    println!("Encrypted Message Matrix: \n{}", text_matrix);
+
+    let decrypted_message = text_matrix.decrypt().modulo(26).text();
+
+    println!("Decrypted Message: \n{}", decrypted_message)
 
     // let e = modulo::matrix_modulo(&text::matrix_from_text(&ciphertext), 26);
     // println!(

@@ -12,7 +12,36 @@ pub struct TextMatrix2 {
     matrix: DMatrix<i32>,
 }
 
+pub trait ModularMatrix {
+    fn modulo(&self, moduluss: i32) -> Self;
+}
+
+macro_rules! impl_modular_matrix {
+    ($type:ty) => {
+        impl ModularMatrix for $type {
+            fn modulo(&self, modulus: i32) -> Self {
+                let modulated_matrix = self.matrix.map(|elem| {
+                    let mut a = elem % modulus;
+                    if a < 0 {
+                        a += modulus;
+                    }
+                    a
+                });
+
+                Self::from_matrix(modulated_matrix)
+            }
+        }
+    };
+}
+
+impl_modular_matrix!(CipherMatrix2);
+impl_modular_matrix!(TextMatrix2);
+
 impl CipherMatrix2 {
+    pub fn from_matrix(matrix: DMatrix<i32>) -> Self {
+        CipherMatrix2 { matrix }
+    }
+
     pub fn new(a: i32, b: i32, c: i32, d: i32) -> Self {
         CipherMatrix2 {
             matrix: DMatrix::from_row_slice(2, 2, &[a, b, c, d]),
@@ -27,24 +56,24 @@ impl CipherMatrix2 {
         }
     }
 
-    pub fn modulo(&self, modulus: i32) -> Self {
-        let modulated_matrix = self.matrix.map(|elem| {
-            let mut a = elem % modulus;
-            // ensure the result is non-negative
-            if a < 0 {
-                a += modulus;
-            }
-            a
-        });
-
-        CipherMatrix2 {
-            matrix: modulated_matrix,
-        }
-    }
+    // pub fn modulo(&self, modulus: i32) -> Self {
+    //     let modulated_matrix = self.matrix.map(|elem| {
+    //         let mut a = elem % modulus;
+    //         // ensure the result is non-negative
+    //         if a < 0 {
+    //             a += modulus;
+    //         }
+    //         a
+    //     });
+    //
+    //     CipherMatrix2 {
+    //         matrix: modulated_matrix,
+    //     }
+    // }
 
     // modular inverse
     pub fn inverse(&self, modulus: i32) -> Self {
-        let a = self.matrix;
+        let a = &self.matrix;
 
         let det = a[(0, 0)] * a[(1, 1)] - a[(0, 1)] * a[(1, 0)];
 
@@ -57,30 +86,34 @@ impl CipherMatrix2 {
 }
 
 impl TextMatrix2 {
-    pub fn modulo(&self, modulus: i32) -> Self {
-        let modulated_matrix = self.matrix.map(|elem| {
-            let mut a = elem % modulus;
-            // ensure the result is non-negative
-            if a < 0 {
-                a += modulus;
-            }
-            a
-        });
-
-        TextMatrix2 {
-            matrix: modulated_matrix,
-        }
+    pub fn from_matrix(matrix: DMatrix<i32>) -> Self {
+        TextMatrix2 { matrix }
     }
+
+    // pub fn modulo(&self, modulus: i32) -> Self {
+    //     let modulated_matrix = self.matrix.map(|elem| {
+    //         let mut a = elem % modulus;
+    //         // ensure the result is non-negative
+    //         if a < 0 {
+    //             a += modulus;
+    //         }
+    //         a
+    //     });
+    //
+    //     TextMatrix2 {
+    //         matrix: modulated_matrix,
+    //     }
+    // }
 
     pub fn encrypt(&self) -> Self {
         TextMatrix2 {
-            matrix: self.matrix * encrypt_matrix().matrix,
+            matrix: &self.matrix * encrypt_matrix().matrix,
         }
     }
 
     pub fn decrypt(&self) -> Self {
         TextMatrix2 {
-            matrix: self.matrix * decrypt_matrix().matrix,
+            matrix: &self.matrix * decrypt_matrix().matrix,
         }
     }
 
@@ -92,7 +125,7 @@ impl TextMatrix2 {
     }
 
     // constructor to convert a string to a matrix of zero-indexed alphabet positions
-    pub fn matrix_from_text(s: &str) -> Self {
+    pub fn new(s: &str) -> Self {
         let mut chars = s.chars().collect::<Vec<char>>();
 
         if chars.len() % 2 == 1 {
@@ -131,10 +164,6 @@ impl fmt::Display for TextMatrix2 {
 }
 
 // move both to main
-
-fn test() {
-    TextMatrix2::matrix_from_text("THISISATEST");
-}
 
 pub fn encrypt_matrix() -> CipherMatrix2 {
     CipherMatrix2::new(9, 3, 4, 5)

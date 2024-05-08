@@ -1,6 +1,4 @@
 extern crate nalgebra as na;
-use crate::matrix::CipherMatrix2;
-use na::DMatrix;
 use prime_factorization::Factorization;
 use std::collections::HashSet;
 
