@@ -80,17 +80,11 @@ impl TextMatrix2 {
             matrix: &matrix.matrix * &self.matrix,
         }
     }
-
-    // pub fn decrypt(&self, matrix: &CipherMatrix2) -> Self {
-    //     TextMatrix2 {
-    //         matrix: &matrix.inverse().matrix * &self.matrix,
-    //     }
-    // }
-
     pub fn text(&self) -> String {
         self.matrix
             .iter()
             .map(|&num| match num {
+                // non-ascii specifications for modulo 29
                 26 => "_".to_string(),
                 27 => "?".to_string(),
                 28 => "!".to_string(),
@@ -116,14 +110,6 @@ impl TextMatrix2 {
             matrix: DMatrix::from_row_slice(chars.len() / 2, 2, &indices).transpose(),
         }
     }
-
-    // convert a matrix back to a string
-    // pub fn text_from_matrix(matrix: &DMatrix<i32>) -> String {
-    //     matrix
-    //         .iter()
-    //         .map(|&num| char::from_u32(num as u32 + 'A' as u32).unwrap())
-    //         .collect()
-    // }
 }
 
 impl fmt::Display for CipherMatrix2 {
