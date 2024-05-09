@@ -75,22 +75,27 @@ impl TextMatrix2 {
         TextMatrix2 { matrix }
     }
 
-    pub fn encrypt(&self) -> Self {
+    pub fn multiply(&self, matrix: &CipherMatrix2) -> Self {
         TextMatrix2 {
-            matrix: encrypt_matrix().matrix * &self.matrix,
+            matrix: &matrix.matrix * &self.matrix,
         }
     }
 
-    pub fn decrypt(&self) -> Self {
-        TextMatrix2 {
-            matrix: decrypt_matrix().matrix * &self.matrix,
-        }
-    }
+    // pub fn decrypt(&self, matrix: &CipherMatrix2) -> Self {
+    //     TextMatrix2 {
+    //         matrix: &matrix.inverse().matrix * &self.matrix,
+    //     }
+    // }
 
     pub fn text(&self) -> String {
         self.matrix
             .iter()
-            .map(|&num| char::from_u32(num as u32 + 'A' as u32).unwrap())
+            .map(|&num| match num {
+                26 => "_".to_string(),
+                27 => "?".to_string(),
+                28 => "!".to_string(),
+                _ => char::from_u32(num as u32 + 'A' as u32).unwrap().to_string(),
+            })
             .collect()
     }
 
@@ -112,13 +117,13 @@ impl TextMatrix2 {
         }
     }
 
-    // Convert a matrix back to a string
-    pub fn text_from_matrix(matrix: &DMatrix<i32>) -> String {
-        matrix
-            .iter()
-            .map(|&num| char::from_u32(num as u32 + 'A' as u32).unwrap())
-            .collect()
-    }
+    // convert a matrix back to a string
+    // pub fn text_from_matrix(matrix: &DMatrix<i32>) -> String {
+    //     matrix
+    //         .iter()
+    //         .map(|&num| char::from_u32(num as u32 + 'A' as u32).unwrap())
+    //         .collect()
+    // }
 }
 
 impl fmt::Display for CipherMatrix2 {
@@ -135,10 +140,10 @@ impl fmt::Display for TextMatrix2 {
 
 // move both to main
 
-pub fn encrypt_matrix() -> CipherMatrix2 {
+pub fn encrypt_matrix1() -> CipherMatrix2 {
     CipherMatrix2::new(9, 3, 4, 5)
 }
 
-pub fn decrypt_matrix() -> CipherMatrix2 {
+pub fn decrypt_matrix1() -> CipherMatrix2 {
     CipherMatrix2::new(23, 7, 18, 5)
 }
