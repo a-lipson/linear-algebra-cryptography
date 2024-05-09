@@ -4,6 +4,15 @@ mod matrix;
 mod modulo;
 
 fn main() {
+    let cipher_digraph1 = "KH";
+    let cipher_digraph2 = "XW";
+
+    let plain_digraph1 = "TH";
+    let plain_digraph2 = "HE";
+
+    let cipher_matrix1 = matrix::TextMatrix2::new(cipher_digraph1);
+    let cipher_matrix2 = matrix::TextMatrix2::new(cipher_digraph2);
+
     let ciphertext = "SONAFQCHMWPTVEVY";
 
     let text_matrix = matrix::TextMatrix2::new(ciphertext);

@@ -82,11 +82,6 @@ impl TextMatrix2 {
     }
 
     pub fn decrypt(&self) -> Self {
-        println!(
-            "self matrix: \n{}\ndecrypt matrix: \n{}",
-            &self.matrix,
-            decrypt_matrix().matrix
-        );
         TextMatrix2 {
             matrix: decrypt_matrix().matrix * &self.matrix,
         }
