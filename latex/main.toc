@@ -1,5 +1,5 @@
 \babel@toc {english}{}\relax 
 \contentsline {section}{\numberline {0.1}Introduction}{1}{section.0.1}%
 \contentsline {subsection}{\numberline {0.1.1}Cryptography}{1}{subsection.0.1.1}%
-\contentsline {subsection}{\numberline {0.1.2}Hill Ciphers}{1}{subsection.0.1.2}%
-\contentsline {section}{\numberline {0.2}Problems}{1}{section.0.2}%
+\contentsline {subsection}{\numberline {0.1.2}Modular Arithmetic}{1}{subsection.0.1.2}%
+\contentsline {section}{\numberline {0.2}Problems}{2}{section.0.2}%
