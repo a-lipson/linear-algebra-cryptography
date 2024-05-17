@@ -1,0 +1,10 @@
+\documentclass[]{report}
+\input{preamble}
+\title{Linear Algebra Cryptography Project}
+\begin{document}
+    \maketitle
+    \tableofcontents
+    \input{sections/intro} % TODO: need to fix zero index for intro and following sections
+    \input{sections/1}
+    \input{sections/2}
+\end{document}

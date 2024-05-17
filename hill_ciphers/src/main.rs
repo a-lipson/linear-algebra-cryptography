@@ -22,12 +22,13 @@ fn main() {
 
     println!("Encrypted Message Matrix: \n{}", text_matrix);
 
-    let decrypted_message = text_matrix
-        .multiply(&matrix::decrypt_matrix1())
-        .modulo(26)
-        .text();
+    println!("Decryption Matrix: \n{}", matrix::decrypt_matrix1());
 
-    println!("Decrypted Message: \n{}", decrypted_message);
+    let decrypted_message_matrix = text_matrix.multiply(&matrix::decrypt_matrix1()).modulo(26);
+
+    println!("Decrypted Message Matrix: \n{}", decrypted_message_matrix);
+
+    println!("Decrypted Message: \n{}", decrypted_message_matrix.text());
 
     let encrypt_matrix26 = matrix::CipherMatrix2::new(3, 11, 4, 15);
     let encrypt_matrix29 = matrix::CipherMatrix2::new(10, 15, 5, 9);
