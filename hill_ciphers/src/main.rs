@@ -54,6 +54,9 @@ fn main() {
     let decrypt_matrix26 = encrypt_matrix26.inverse(26);
     let decrypt_matrix29 = encrypt_matrix29.inverse(29);
 
+    println!("Decryption Matrix 26: \n{}", decrypt_matrix26);
+    println!("Decryption Matrix 29: \n{}", decrypt_matrix29);
+
     let encrypted_message = "ZMOY";
 
     let encrypted_matrix = matrix::TextMatrix2::new(encrypted_message);
