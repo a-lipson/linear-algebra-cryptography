@@ -48,23 +48,19 @@ Expanding on the relatively trivial Caesar cipher, it is natural to consider wha
 
 \noindent The difference comes when we try to brute force this cipher, as the key space is not 26, but rather the number of possible permutations of 26 elements, 26 factorial (we have 26 choices of what character to map A to, then 25 remaining ones to which to map B, etc.). This is of the order of $2^{88}$, a far cry from 26. Thus, brute force is no longer a viable option (well with a supercomputer these days it is, but we'll see why that doesn't matter). There is a bigger issue with this cipher, which is that it works on the level of characters, and thus preserves the patterns in characters. For example, in any sufficiently large English text, you will find that $E$ is the most frequently occurring character, and accounts for about $13\%$ of characters, so in any sufficiently large chunk of ciphertext, we can analyze the most frequently occurring characters, and map the top one to correspond to the plaintext ``E", and by doing so for a few letters, we can pretty quickly reduce our key space to far more reasonable numbers than 26 factorial, from whereon we can brute force the key. Frequency analysis is another powerful attack against ciphers which preserve patterns in the plaintext, and thus are a good attack to be aware of when considering the design and structure of ciphers.
 
-% \section{Hill Ciphers}
-
-% Now, let us consider Hill Ciphers, the same way we have considered Shift and Substitution ciphers. Hill Ciphers require a little more involved math than just modular addition and subtraction, so we will develop that math alongside the cipher. Hill Ciphers are also a form of substitution cipher, in that they create a mapping based on the key that is applied to the whole plaintext in the same way. The first fundamental difference from the ciphers we've dealt with so far are that Hill Ciphers can deal not only with single characters, but with chunks of characters of size $n$. Thus Hill Ciphers are not just one thing but a whole family of ciphers, called Hill $n$-ciphers. In this paper we will develop the theory surrounding Hill 2-ciphers, but note that the same principles are easily extrapolated to Hill Ciphers of higher dimension, and a Hill 5-cipher is significantly more secure than a Hill 2-cipher (for reasons that will become shortly apparent).
-
 \section{Modular Arithmetic}
 
-Before we move on to Hill Ciphers, there is some mathematical background to set up. Secure cryptography often relies on operations that are easy to perform, but difficult to invert. Modular arithmetic serves this purpose very well. In essence, it is just the usual arithmetic operations, except with the application of the ``modulo" operator after the evaluation of any expression. We say for example that $a$ ``mod" $m$ = $k$, where $k$ is the remainder when you divide $a$ by $m$. As an example, imagine that we are working with a system mod 5 - then, we have equations like:
+Before we move on to Hill Ciphers, there is some mathematical background to set up. Secure cryptography often relies on operations that are easy to perform, but difficult to invert. Modular arithmetic serves this purpose very well. In essence, it is just the usual arithmetic operations, except with the application of the ``modulo" operator after the evaluation of any expression. We say for example that $a$ ``mod" $m$ is $k$, where $k$ is the remainder when you divide $a$ by $m$. As an example, imagine that we are working with a system mod 5 - then, we have equations like:
 \[
-    2 \cdot 3 = 6 = 1 \; (\text{mod } 5).
+    2 \cdot 3 = 6 \equiv 1 \; (\text{mod } 5).
 \]
-Note that this means that the output of any operation, mod $m$, will be an integer from $0$ to $(m - 1)$, inclusive. As we saw with Hill Ciphers, we will find this particularly useful when we want to perform our cryptographic operations, but still end up with a string of integers that we can map back to text directly.
+Note that this means that the output of any operation, mod $m$, will be an integer from $0$ to $(m - 1)$, inclusive. As we saw with Hill Ciphers, we will find this particularly useful when we want to perform our cryptographic operations, but still end up with a string of integers that we can map back to text directly. Additionally, note the notation ``$\equiv$", which means that two expressions are modularly ``equivalent".
 
 \subsection{Systems of Linear Equations}
 Given that modular operations should obey scalar multiplication and addition (under the modular conditions), it is natural to consider how these operations might transfer to the solution of a system of linear equations, modulo a given $m$. Take the 2-variable, 2-equation case:
 \begin{align*}
-    ax + by &= f \; (\text{mod } m) \\
-    cx + dy &= g \; (\text{mod } m)
+    ax + by &\equiv f \; (\text{mod } m) \\
+    cx + dy &\equiv g \; (\text{mod } m)
 \end{align*}
 where we hope to deterministically identify $x$ and $y$ that satisfy the pair of equations given all others as constants. Well, let us begin by tackling the problem as if the modulo doesn't even exist (for as long as we can) since that seemed to work well with simple multiplication. We may begin by rewriting the system as a matrix equation:
 \[
@@ -74,7 +70,7 @@ where we hope to deterministically identify $x$ and $y$ that satisfy the pair of
     \end{bmatrix} \begin{bmatrix}
         x \\
         y
-    \end{bmatrix} = \begin{bmatrix}
+    \end{bmatrix} \equiv \begin{bmatrix}
         f \\
         g
     \end{bmatrix} \; (\text{mod } m).
@@ -84,7 +80,7 @@ From here, there's nothing (so far) stopping us from simply inverting the given 
     \begin{bmatrix}
         x \\
         y
-    \end{bmatrix} = (ad - bc)^{-1} \begin{bmatrix}
+    \end{bmatrix} \equiv (ad - bc)^{-1} \begin{bmatrix}
         d & -b \\
         -c & a
     \end{bmatrix} \begin{bmatrix}
@@ -94,36 +90,36 @@ From here, there's nothing (so far) stopping us from simply inverting the given 
 \]
 Here, we need to deal first with the negatives. This is easy enough, as we can more rigorously uniquely identify $a$ mod $m$ for arbitrary integer $a$ as $k \in [0, m)$ such that $a = b \cdot m + k$, for integer $b$ (note, not necessarily positive $b$). Thus, we can take negative values of $a$, for example:
 \[
-    -4 = -5 + 1 = 1 \; (\text{mod } 5).
+    -4 = -5 + 1 \equiv 1 \; (\text{mod } 5).
 \]
 The negative values therefore don't present an issue under modular conditions. However, there still exists the issue of the multiplicative inverse (division, effectively), to compute $(ad - bc)^{-1}$.
 
 \subsection{Introducing Modular Inversion}
 Now, observe that we were able to perform modular multiplication incredibly easily, as it is just the arithmetic multiplication that we are used to, followed by the modulo. However, if we try and invert the process we just did, in regular arithmetic we obviously end up with division, and this is no problem, however if we try that here, for example to find $3$ given $1$ and $2$ in the above equation, so:
 \[
-    2 \cdot x = 1 \; (\text{mod } 5),
+    2 \cdot x \equiv 1 \; (\text{mod } 5),
 \]
 we can try to just perform arithmetic division, which gets us:
 \[
-    x = \frac{1}{2} \; (\text{mod } 5),
+    x \equiv \frac{1}{2} \; (\text{mod } 5),
 \]
 and we don't really have any way to progress from here - no way to get back to an integer on the interval $[0, 5)$. \medskip
 
 \noindent In fact, this problem ends up being nowhere near as trivial as it might seem at first glance. Luckily, there are a few algorithms that we can use to simplify things. Begin by considering that we only need to be able to find what is called the ``modular multiplicative inverse" of a number in order to divide by it. For example, if we know that:
 \[
-    2 \cdot 3 = 1 \; (\text{mod } 5),
+    2 \cdot 3 \equiv 1 \; (\text{mod } 5),
 \]
 we say ``3 is the multiplicative inverse of 2 modulo 5", and we can now solve the equation:
 \[
-    2 \cdot x = 3 \; (\text{mod } 5),
+    2 \cdot x \equiv 3 \; (\text{mod } 5),
 \]
 by first multiplying both sides by the multiplicative inverse of $2$ module 5, giving us:
 \[
-    2 \cdot 3 \cdot x = 9 = 4 \; (\text{mod } 5),
+    2 \cdot 3 \cdot x = 9 \equiv 4 \; (\text{mod } 5),
 \]
 because we know that under modular multiplication, we can simplify this to:
 \[
-    1 \cdot x = 4 \; (\text{mod } 5),
+    1 \cdot x \equiv 4 \; (\text{mod } 5),
 \]
 and so:
 \[
@@ -131,12 +127,12 @@ and so:
 \]
 This is of course trivial to verify, as:
 \[
-    2 \cdot 4 = 8 = 3 \; (\text{mod } 5).
+    2 \cdot 4 = 8 \equiv 3 \; (\text{mod } 5).
 \]
 
 Thus our problem has been reduced to, given an integer $m$, and another integer $a \in [0, m)$, finding an integer $b \in [0, m)$ such that:
 \[
-    a \cdot b = 1 \; (\text{mod } m).
+    a \cdot b \equiv 1 \; (\text{mod } m).
 \]
 
 \subsection{Conditions for Invertibility}
@@ -157,26 +153,29 @@ so
 where both terms are integers, which is not possible unless $d = 1$, which we have said it isn't, or $d = -1$, which again, since it has to be positive, it can't be. Thus we cannot have a multiplicative inverse for $a$ if the greatest common divisor of $a$ and $m$ is not $1$. \medskip
 
 \subsection{Computing the inverse}
-It so happens that the condition that we proved above was necessary is also sufficient, and there are two primary methods by which we can perform the inversion, assuming we know that $\gcd(a, m) = 1$. Namely, the Extended Euclidean Algorithm and Euler's Theorem, which employs Euler's totient function. The former is computationally lengthy, so we will prefer the latter.
+It so happens that the condition that we proved above was necessary is also sufficient, and there are two primary methods by which we can perform the inversion, assuming we know that $\gcd(a, m) = 1$. Namely, the Extended Euclidean Algorithm and Euler's Theorem, which employs Euler's totient function. The former is computationally lengthy, so we will prefer the latter. \medskip
 
-\noindent We will now use $m$ for the modulus, so it doesn't conflict with the $n$ in Hill $n$-cipher below. Assuming now that for a given $a, m$, $a$ has an inverse modulo $m$, so $\gcd(a, m) = 1$, we may employ Euler's Theorem which states that:
+\noindent Assuming now that for a given $a, m$, $a$ has an inverse modulo $m$, so $\gcd(a, m) = 1$, we may employ Euler's Theorem which states that:
 \[
     a^{\phi(m)} \equiv 1 \; (\text{mod } m),
 \]
-where $\phi(m)$ is Euler's totient function, which is defined as the product of the unique prime factors of $m$. \medskip
+where $\phi(m)$ is Euler's totient function, which is defined as the input $m $ times the product of one minus the reciprocal of each unique prime factor $m$. \medskip
 
-\noindent In the case where $m$ is prime, then the totient function merely returns the given input. This fact gives rise to Fermat's little theorem, 
+\noindent In the case where $m$ is prime, then the totient function merely returns one less than the given input. 
+\[
+\phi(p)=p\left( 1-\frac{1}{p} \right)=p\left( \frac{p-1}{p} \right)=p-1 
+.\] 
+This fact gives rise to Fermat's little theorem, 
 \[
     a^p \equiv a \pmod{p}
 ,\] 
-where $p$ is prime.
+where $p$ is prime. \medskip
 
 \noindent So, in the case when $m$ is prime, the inverse is given simply by,
  \[
-   a^{m-1} \pmod{m}
+   a^{m-2} \pmod{m}
 .\] 
 
-%the number of positive integers, $k \leq n$ for which $\gcd(k, n) = 1$.
 \noindent Even when $m$ is composite, this is still incredibly useful, because by definition we have:
 \[
     a \cdot a^{\phi(m) - 1} \equiv 1 \; (\text{mod } m),
@@ -206,7 +205,7 @@ The process of encryption is simple, we begin by choosing the size of the ``chun
 \]
 We can confirm the invertibility of this matrix for decryption by taking the determinant:
 \[
-    \det K = -269 = 17 \; (\text{mod } 26),
+    \det K = -269 \equiv 17 \; (\text{mod } 26),
 \]
 and confirming that since $\gcd (17, 26) = 1$, our encryption matrix is invertible. Now, in order to operate on our plaintext, we have to first pad it with some character to make the size a multiple of $n = 2$, so that we can split it up evenly. Thus, we pad with ``A"s, giving us ``ETTUBRUTEXOXOA" as our plaintext. Now, we can convert every digraph to a 2-d vector of integers, by the usual mapping (``A" to 0 through ``Z" to 25), and lay them all out in a single $2 \times 7$ matrix:
 \[
@@ -224,7 +223,7 @@ note that this matrix must be read top to bottom, left to right to read out the 
         4 & 19 & 1 & 20 & 4 & 14 & 14 \\
         19 & 20 & 17 & 19 & 23 & 23 & 0
     \end{bmatrix} \\
-    &= \begin{bmatrix}
+    &\equiv \begin{bmatrix}
         22 & 9 & 3 & 4 & 18 & 10 & 20 \\
         7 & 15 & 14 & 11 & 11 & 7 & 10
     \end{bmatrix} \; (\text{mod } 26).
@@ -234,7 +233,7 @@ Converting this matrix back to text, by the same process we used to initially en
 \subsection{Decryption}
 Decryption is accomplished by reversing exactly that process. Given the encryption key, we know that what we did in order to encrypt was:
 \[
-    K A = C \; (\text{mod } m),
+    K A \equiv C \; (\text{mod } m),
 \]
 where $K$ is our encryption matrix, $X$ our integer encoded plaintext matrix, and $C$, the encrypted ciphertext. So, in order to reverse this, we take what we did in the system of linear, modular equations, and multiply both sides by $K^{-1}$, which we can find by the methods described in the Modular Arithmetic section. The issue to be aware of here is that in order for the determinant of $K$ to have a modular inverse, so that the matrix is actually invertible, it is not only necessary that it be non-zero, but also that it be relatively prime to $m$. \medskip
 
@@ -257,38 +256,44 @@ Now, what we want is to invert our key,
     \end{bmatrix},
 \]
 modulo 26, and multiply this inverse by $C$, again modulo 26, thus returning our ciphertext. Thus, we have, by the Euler's theorem method of modular inversion:
-\[
-    K^{-1} = (17)^{-1} \begin{bmatrix}
+\begin{align*}
+    K^{-1} &= (17)^{-1} \begin{bmatrix}
         1 & -12 \\
         -23 & 7
-    \end{bmatrix} = 17^{12 - 1} \begin{bmatrix}
+    \end{bmatrix} \\
+    &\equiv 17^{12 - 1} \begin{bmatrix}
         1 & 14 \\
         3 & 7
-    \end{bmatrix} = 23 \begin{bmatrix}
+    \end{bmatrix} \\
+    &\equiv 23 \begin{bmatrix}
         1 & 14 \\
         3 & 7
-    \end{bmatrix} = \begin{bmatrix}
+    \end{bmatrix} \\
+    &\equiv \begin{bmatrix}
         23 & 10 \\
         17 & 5
     \end{bmatrix} \; (\text{mod } 26).
-\]
+\end{align*}
 Multiplying this inverse key by our matrix representation of our ciphertext, we have:
-\[
-    A = K^{-1} C = \begin{bmatrix}
+\begin{align*}
+    A = K^{-1} C &= \begin{bmatrix}
         23 & 10 \\
         17 & 5
     \end{bmatrix} \begin{bmatrix}
         22 & 9 & 3 & 4 & 18 & 10 & 20 \\
         7 & 15 & 14 & 11 & 11 & 7 & 10
-    \end{bmatrix} = \begin{bmatrix}
+    \end{bmatrix} \\
+    &\equiv \begin{bmatrix}
         4 & 19 & 1 & 20 & 4 & 14 & 14 \\
         19 & 20 & 17 & 19 & 23 & 23 & 0
     \end{bmatrix} \; (\text{mod } 26).
-\]
+\end{align*}
 This of course lines up with our initial matrix representation of the plaintext, but just to be sure, we can convert it back to text, yielding ``ETTUBRUTEXOXOA", as we wanted. Caesar would be proud how far we've come!
 
 \section{Frequency Analysis}
 Now, let us explore how frequency analysis could be used to attack a Hill 2-Cipher. Frequency analysis seeks to narrow down the search space of possible encryption keys by making the assumption that the most frequently occurring digraphs in a large sample of ciphertext (encrypted plaintext) map to the most frequently occuring digraphs in the original plaintext. This is a valid way to attack a Hill Cipher because it maintains linearity (an unfortunate consequence of the dependence on linear algebra). \medskip
+
+\noindent However, it is possible for frequent digraphs in a body of text to not be encoded together under the Hill Cipher. In English, the most common digraphs are "th" and "he," however these digraphs may not always begin at even indices within the plaintext. So, we would expect to find these digraphs in even positions only about half the time. However, the same holds for all digraphs, so the relative occurrence frequency is maintained, even if it does not match with plain English. Still, this is enough to make the Hill Cipher vulnerable to frequency analysis attacks. Increasing the matrix size and therefore the letter grouping size is a potential way to mitigate the effectiveness of frequency analysis as there are more ways for the letter groupings to not quite fit in with the cipher. \medskip
 
 \noindent As an example, assume that you intercept the message ``SONAFQCHMWPTVEVY," which you know was encrypted using a Hill 2-cipher. By prior analysis, we happen to know that the most frequently occurring digraphs were ``KH" and ``XW," so we assume those correspond to ``TH" and ``HE," respectively, as they are the most frequent digraphs in long plaintext (which we know from context). Our goal is to find the deciphering matrix, and decrypt the message. \medskip
 
@@ -336,17 +341,17 @@ This gives us:
     \end{bmatrix} \begin{bmatrix}
         7 \\
         4
-    \end{bmatrix} &= \begin{bmatrix}
+    \end{bmatrix} &\equiv \begin{bmatrix}
         23 \\
         22
     \end{bmatrix} \; (\text{mod } 26).
 \end{align*}
 We can break these up into four linear, modular equations as:
 \begin{align*}
-    19a + 7b &= 10 \; (\text{mod } 26), \\
-    19c + 7d &= 7 \; (\text{mod } 26), \\
-    7a + 4b &= 23 \; (\text{mod } 26), \\
-    7c + 4d &= 22 \; (\text{mod } 26).
+    19a + 7b &\equiv 10 \; (\text{mod } 26), \\
+    19c + 7d &\equiv 7 \; (\text{mod } 26), \\
+    7a + 4b &\equiv 23 \; (\text{mod } 26), \\
+    7c + 4d &\equiv 22 \; (\text{mod } 26).
 \end{align*}
 Pairing these off by the variables they address, we can recoalesce them into two matrix equations, one in terms of $a$ and $b$, and one in terms of $c$ and $d$. This gives us:
 \begin{align*}
@@ -356,7 +361,7 @@ Pairing these off by the variables they address, we can recoalesce them into two
     \end{bmatrix} \begin{bmatrix}
         a \\
         b
-    \end{bmatrix} &= \begin{bmatrix}
+    \end{bmatrix} &\equiv \begin{bmatrix}
         10 \\
         23
     \end{bmatrix} \; (\text{mod } 26), \\
@@ -366,7 +371,7 @@ Pairing these off by the variables they address, we can recoalesce them into two
     \end{bmatrix} \begin{bmatrix}
         c \\
         d
-    \end{bmatrix} &= \begin{bmatrix}
+    \end{bmatrix} &\equiv \begin{bmatrix}
         7 \\
         22
     \end{bmatrix} \; (\text{mod } 26).
@@ -380,19 +385,19 @@ In order to solve either of these equations, the first step is to invert the mat
 \]
 modulo 26. \medskip
 
-\noindent First, we need to verify that this is even possible. So, we need to check that the determinant of the matrix is indeed coprime with $26$, that is doesn't have $2, 13, 26$ as factors. The determinant is:
+\noindent First, we need to verify that this is even possible. So, we need to check that the determinant of the matrix, modulo 26, is indeed coprime with $26$, that is, it doesn't have $2$ or $13$ as factors. The determinant is:
 \[
     \left|\begin{bmatrix}
         19 & 7 \\
         7 & 4
-    \end{bmatrix}\right| = 19 \cdot 4 - 7 \cdot 7 = 1 \; (\text{mod} 26),
+    \end{bmatrix}\right| \equiv 19 \cdot 4 - 7 \cdot 7 = 1 \; (\text{mod} 26),
 \]
 which indeed doesn't share any factors with $26$ apart from $1$, so we can take the inverse as:
 \[
     \begin{bmatrix}
         19 & 7 \\
         7 & 4
-    \end{bmatrix}^{-1} = (27 \; (\text{mod } 26))^{-1} \begin{bmatrix}
+    \end{bmatrix}^{-1} \equiv (27 \; (\text{mod } 26))^{-1} \begin{bmatrix}
         4 & -7 \\
         -7 & 19
     \end{bmatrix} \; (\text{mod } 26),
@@ -402,7 +407,7 @@ where $(27 \; (\text{mod } 26))^{-1}$ is the inverse of $1$, modulo $26$, which 
     \begin{bmatrix}
         19 & 7 \\
         7 & 4
-    \end{bmatrix}^{-1} = \begin{bmatrix}
+    \end{bmatrix}^{-1} \equiv \begin{bmatrix}
         4 & 19 \\
         19 & 19
     \end{bmatrix} \; (\text{mod } 26).
@@ -418,7 +423,7 @@ Thus, we have from our original equations:
     \end{bmatrix} \begin{bmatrix}
         a \\
         b
-    \end{bmatrix} &= \begin{bmatrix}
+    \end{bmatrix} &\equiv \begin{bmatrix}
         4 & 19 \\
         19 & 19
     \end{bmatrix} \begin{bmatrix}
@@ -434,7 +439,7 @@ Thus, we have from our original equations:
     \end{bmatrix} \begin{bmatrix}
         c \\
         d
-    \end{bmatrix} &= \begin{bmatrix}
+    \end{bmatrix} &\equiv \begin{bmatrix}
         4 & 19 \\
         19 & 19
     \end{bmatrix} \begin{bmatrix}
@@ -453,7 +458,7 @@ So, cancelling out
     \end{bmatrix} = \begin{bmatrix}
         209 & 104 \\
         494 & 209
-    \end{bmatrix} = \begin{bmatrix}
+    \end{bmatrix} \equiv \begin{bmatrix}
         1 & 0 \\
         0 & 1
     \end{bmatrix} (\text{mod } 26),
@@ -472,7 +477,7 @@ we have:
     \end{bmatrix} = \begin{bmatrix}
         477 \\
         627
-    \end{bmatrix} = \begin{bmatrix}
+    \end{bmatrix} \equiv \begin{bmatrix}
         9 \\
         3
     \end{bmatrix} \; (\text{mod } 26), \\
@@ -488,7 +493,7 @@ we have:
     \end{bmatrix} = \begin{bmatrix}
         446 \\
         551
-    \end{bmatrix} = \begin{bmatrix}
+    \end{bmatrix} \equiv \begin{bmatrix}
         4 \\
         5
     \end{bmatrix} \; (\text{mod } 26).
@@ -509,45 +514,46 @@ Now, we need to invert this encryption matrix, modulo $26$, so that we can decry
         5 & -3 \\
         -4 & 9
     \end{bmatrix} \\
-    &= 7^{\phi(26) - 1} \begin{bmatrix}
+    &\equiv 7^{\phi(26) - 1} \begin{bmatrix}
         5 & 23 \\
         22 & 9
     \end{bmatrix} \\
-    &= 15 \begin{bmatrix}
+    &\equiv 15 \begin{bmatrix}
         5 & 23 \\
         22 & 9
     \end{bmatrix} \\
-    &= \begin{bmatrix}
+    &\equiv \begin{bmatrix}
         23 & 7 \\
         18 & 5
     \end{bmatrix} \; (\text{mod } 26).
 \end{align*}
 Now, we can finally decipher our ciphertext direction, after we convert the digraphs to integers. This gives us that ``SONAFQCHMWPTVEVY" came from:
-\[
+\begin{align*}
     \begin{bmatrix}
         23 & 7 \\
         18 & 5
-    \end{bmatrix} \begin{bmatrix}
+    \end{bmatrix} & \begin{bmatrix}
         18 & 13 & 5 & 2 & 12 & 15 & 21 & 21 \\
         14 & 0 & 16 & 7 & 22 & 19 & 4  & 24
-    \end{bmatrix} = \begin{bmatrix}
+    \end{bmatrix} \\
+    &\equiv \begin{bmatrix}
         18 & 13 & 19 & 17 & 14 & 10 & 17 & 1 \\
         4 & 0 & 14 & 19 & 14 & 1 & 8 & 4
     \end{bmatrix} \; (\text{mod } 26),
-\]
+\end{align*}
 which, converting back to letters (remember, reading top to bottom then left to right, because each column is a separate digraph) corresponds to the plaintext message ``SENATORTOOKBRIBE", we've successfully cracked the code!
 
 \section{Increased Encryption}
-It was pretty easy for us to attack that by frequency analysis. If we want to be more secure without upping the size of our cipher, it is often sufficient to just apply it twice, with two keys, for example by first encrypting it using a Hill 2-cipher by applying the matrix $K_{26} = \begin{bmatrix}
+It was pretty easy for us to attack that by frequency analysis. If we want to be more secure without increasing the size of our cipher, it is often sufficient to just apply it twice, with two keys. For example, we can first encrypt the plaintext using a Hill 2-cipher by applying the matrix $K_{26} = \begin{bmatrix}
     3 & 11 \\
     4 & 15
 \end{bmatrix}$ working modulo 26, and then applying the matrix $K_{29} = \begin{bmatrix}
     10 & 15 \\
     5 & 9
-\end{bmatrix}$, working modulo 29, by padding our character set with `` ", ``?", and ``!" mapped to 26, 27, and 28 respectively. Since the matrices are defined modulo different numbers, there is not a trivial way to compose the two transformations, and so this is in fact a more intricate cipher than a single Hill 2-cipher.
+\end{bmatrix}$, working modulo 29. In order to achieve a character set of length 29, we can pad the alphabet with `` ", ``?", and ``!" mapped to 26, 27, and 28 respectively. Since the matrices are defined with different moduli, there is not a trivial way to compose the two transformations, and so this process provides a more intricate cipher than a single Hill 2-cipher.
 
 \subsection{Double Encryption}
-Using these schematics, we can encipher the message ``SEND" as follows. First, as usual, we split into digraphs and convert them to 2-d integer vectors, by the usual mapping. This leaves us with:
+Using these schematics, we can encipher the message ``SEND" as follows. First, as usual, we split into digraphs and convert them to 2D integer vectors, by the usual 26 set mapping. This leaves us with:
 \[
     A = \begin{bmatrix}
         18 & 13 \\
@@ -562,7 +568,7 @@ Now, we apply the first Hill cipher,
     \end{bmatrix} \begin{bmatrix}
         18 & 13 \\
         4 & 3
-    \end{bmatrix} = \begin{bmatrix}
+    \end{bmatrix} \equiv \begin{bmatrix}
         20 & 20 \\
         2 & 19
     \end{bmatrix} \; (\text{mod } 26).
@@ -575,44 +581,47 @@ And subsequently apply the second Hill cipher:
     \end{bmatrix} \begin{bmatrix}
         20 & 20 \\
         2 & 19
-    \end{bmatrix} = \begin{bmatrix}
+    \end{bmatrix} \equiv \begin{bmatrix}
         27 & 21 \\
         2 & 10
     \end{bmatrix} \; (\text{mod } 29).
 \]
-Finally, converting this back to text by the integer-text encoding we employed, we have our ciphertext ``?CVK", relatively immune to frequency analysis attacks.
+Finally, converting this back to text by the integer-text encoding we employed, we have our ciphertext ``?CVK", which is relatively immune to frequency analysis attacks.
 
 \subsection{Double Decryption}
 Similarly, using these schematics, we can decipher the message ``ZMOY" as follows. Now, we have two inverses to calculate and we have to check their validity independently. First, we check:
 \[
-    \det K_{29} = 15 \; (\text{mod } 29),
+    \det K_{29} \equiv 15 \; (\text{mod } 29),
 \]
 so we're good on that front. Second, we check:
 \[
-    \det K_{26} = 1 \; (\text{mod } 26),
+    \det K_{26} \equiv 1 \; (\text{mod } 26),
 \]
 so both matrices are invertible, and we can proceed with actually computing those inverses. First:
-\[
-    K_{29}^{-1} = (15)^{\phi(29) - 1} \begin{bmatrix}
+\begin{align*}
+    K_{29}^{-1} &= (15)^{\phi(29) - 1} \begin{bmatrix}
         9 & -15 \\
         -5 & 10
-    \end{bmatrix} = 15^{27} \begin{bmatrix}
+    \end{bmatrix} \\
+    &= 15^{27} \begin{bmatrix}
         9 & 14 \\
         24 & 10
-    \end{bmatrix} = 2 \begin{bmatrix}
+    \end{bmatrix} \\
+    &\equiv 2 \begin{bmatrix}
         9 & 14 \\
         24 & 10
-    \end{bmatrix} = \begin{bmatrix}
+    \end{bmatrix} \\
+    &\equiv \begin{bmatrix}
         18 & 28 \\
         19 & 20
     \end{bmatrix} \; (\text{mod } 29).
-\]
-Note that $\phi(29) = 28$, because since $29$ is prime, every positive integer less than $29$ is relatively prime to it. Second:
+\end{align*}
+Note that $\phi(29) = 28$. Because since $29$ is prime, every positive integer less than $29$ is relatively prime to it. Second:
 \[
     K_{26}^{-1} = 1^{11} \begin{bmatrix}
         15 & -11 \\
         -4 & 3
-    \end{bmatrix} = \begin{bmatrix}
+    \end{bmatrix} \equiv \begin{bmatrix}
         15 & 15 \\
         22 & 3
     \end{bmatrix} \; (\text{mod } 26).
@@ -632,7 +641,7 @@ Putting it all together to invert our ciphertext, we first apply $K_{29}^{-1}$ (
     \end{bmatrix} \begin{bmatrix}
         25 & 14 \\
         12 & 24
-    \end{bmatrix} = \begin{bmatrix}
+    \end{bmatrix} \equiv \begin{bmatrix}
         3 & 25 \\
         19 & 21
     \end{bmatrix} \; (\text{mod } 29).
@@ -645,15 +654,15 @@ We follow this up by applying $K_{26}^{-1}$:
     \end{bmatrix} \begin{bmatrix}
         3 & 25 \\
         19 & 21
-    \end{bmatrix} = \begin{bmatrix}
+    \end{bmatrix} \equiv \begin{bmatrix}
         18 & 14 \\
         19 & 15
-    \end{bmatrix}.
+    \end{bmatrix} \; (\text{mod } 26).
 \]
 We can convert this back to text as usual, yielding the plaintext message ``STOP". Indeed, this seems like a good place to stop.
 
 \section{Conclusion}
 
-TBD
+Hill Ciphers, though elementary on their own, demonstrate the power of linear algebra and modular arithmetic--specifically modular inversion--in ciphers. Linear algebra provides the foundation for many of the operations contained in the most popular and secure ciphers in the modern world such as AES, which is used by the NSA. Though the Hill 2-cipher we used here was rather simple, with a key space of merely $26^4$, it is easy to extrapolate the same principles to larger, more secure Hill ciphers, such as the Hill 5-cipher, which already has a key space comparable to that of AES-128. As such, the takeaway from examinations such as these is not the viability of the ciphers themselves, but rather the cryptographic techniques that they promote, and the mathematics underlying it all.
 
 \end{document}
