@@ -157,20 +157,35 @@ so
 where both terms are integers, which is not possible unless $d = 1$, which we have said it isn't, or $d = -1$, which again, since it has to be positive, it can't be. Thus we cannot have a multiplicative inverse for $a$ if the greatest common divisor of $a$ and $m$ is not $1$. \medskip
 
 \subsection{Computing the inverse}
-It so happens that the condition that we proved above was necessary is also sufficient, and there are two primary methods by which we can perform the inversion, assuming we know that $\gcd(a, m) = 1$. Namely, the extended Euclidean Algorithm and Euler's Theorem: ALEX IF POSSIBLE EXPLAIN THESE + EXAMPLES PLS, use $m$ for the modulus, so it doesn't conflict with the $n$ in Hill $n$-cipher below
-% Assuming now that for a given $a, n$, $a$ has an inverse modulo $n$, so $\gcd(a, n) = 1$, we may employ Euler's Theorem which states that:
-% \[
-%     a^{\phi(n)} = 1 \; (\text{mod } n),
-% \]
-% where $\phi(n)$ is Euler's totient function, the number of positive integers, $k \leq n$ for which $\gcd(k, n) = 1$. This is incredibly useful, because by definition then we have:
-% \[
-%     a \cdot a^{\phi(n) - 1} = 1 \; (\text{mod } n),
-% \]
-% so we have our multiplicative inverse,
-% \[
-%     a^{\phi(n) - 1} \; (\text{mod } n).
-% \]
-% With this, and the system of linear equations we dealt with previously, we have everything we need to dive into Hill Ciphers.
+It so happens that the condition that we proved above was necessary is also sufficient, and there are two primary methods by which we can perform the inversion, assuming we know that $\gcd(a, m) = 1$. Namely, the Extended Euclidean Algorithm and Euler's Theorem, which employs Euler's totient function. The former is computationally lengthy, so we will prefer the latter.
+
+\noindent We will now use $m$ for the modulus, so it doesn't conflict with the $n$ in Hill $n$-cipher below. Assuming now that for a given $a, m$, $a$ has an inverse modulo $m$, so $\gcd(a, m) = 1$, we may employ Euler's Theorem which states that:
+\[
+    a^{\phi(m)} \equiv 1 \; (\text{mod } m),
+\]
+where $\phi(m)$ is Euler's totient function, which is defined as the product of the unique prime factors of $m$. \medskip
+
+\noindent In the case where $m$ is prime, then the totient function merely returns the given input. This fact gives rise to Fermat's little theorem, 
+\[
+    a^p \equiv a \pmod{p}
+,\] 
+where $p$ is prime.
+
+\noindent So, in the case when $m$ is prime, the inverse is given simply by,
+ \[
+   a^{m-1} \pmod{m}
+.\] 
+
+%the number of positive integers, $k \leq n$ for which $\gcd(k, n) = 1$.
+\noindent Even when $m$ is composite, this is still incredibly useful, because by definition we have:
+\[
+    a \cdot a^{\phi(m) - 1} \equiv 1 \; (\text{mod } m),
+\]
+so we have our multiplicative inverse,
+\[
+    a^{\phi(m) - 1} \; (\text{mod } m).
+\]
+With this, and the system of linear equations we dealt with previously, we have everything we need to dive into Hill Ciphers.
 
 \section{Hill Ciphers}
 Hill Ciphers are a cryptographic method that uses linear algebra in order to encipher and decipher a message consisting (typically) of just a string of letters, though any finite character set can be encoded equivalently. Note that in order that the matrices with which we operate be invertible, we need the size of our character set to be relatively prime with the determinant of our matrix. Thus, it usually helps that the size of our character set is prime, so we can have more possible determinants for our matrix, and thus a larger key space.
